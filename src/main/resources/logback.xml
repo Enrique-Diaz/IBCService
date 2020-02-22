@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<!-- use Spring default values -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
+    
+    <property name="HOME_LOG" value="/var/logs/IBCService.log"/>
+
+    <appender name="FILE-ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${HOME_LOG}</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>/var/logs/IBCService-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- each archived file, size max 10MB -->
+            <maxFileSize>10MB</maxFileSize>
+            <!-- total size of all archive files, if total size > 20GB, 
+				it will delete old archived file -->
+            <totalSizeCap>20GB</totalSizeCap>
+            <!-- 60 days to keep -->
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%clr(%date{yyyy-MM-dd@HH:mm:ss.SSS}){faint}||%clr(%5p) || %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wex</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+    
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%clr(%date{yyyy-MM-dd@HH:mm:ss.SSS}){faint}||%clr(%5p) || %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wex</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="com.example" level="info" additivity="false">
+        <appender-ref ref="FILE-ROLLING"/>	<!-- Every log will apear on file -->
+        <appender-ref ref="CONSOLE" /> 		<!-- Every log will apear on screen log -->
+    </logger>
+    
+    <logger name="org.springframework" level="info" additivity="false">
+        <appender-ref ref="FILE-ROLLING"/>	<!-- Every log will apear on file -->
+        <appender-ref ref="CONSOLE" /> 		<!-- Every log will apear on screen log -->
+    </logger>
+    
+    <logger name="org.hibernate" level="info" additivity="false">
+        <appender-ref ref="FILE-ROLLING"/>	<!-- Every log will apear on file -->
+        <appender-ref ref="CONSOLE" /> 		<!-- Every log will apear on screen log -->
+    </logger>
+
+    <root level="error">
+        <appender-ref ref="FILE-ROLLING"/>	<!-- Every log will apear on file -->
+        <appender-ref ref="CONSOLE" /> 		<!-- Every log will apear on screen log -->
+    </root>
+
+</configuration>

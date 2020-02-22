@@ -1,0 +1,20 @@
+server:
+  port: 63000
+spring:
+  datasource:
+    url: jdbc:h2:mem:ibcdb
+    driverClassName: org.h2.Driver
+    username: user
+    password: password
+  jpa:
+    generate-ddl: true
+  h2:
+    console:
+      enabled: true
+  boot:
+    admin:
+      url: http://localhost:9090
+management:
+  security:
+    enabled: false
+
