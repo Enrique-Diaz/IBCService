@@ -5,8 +5,8 @@ Example project of a µIBCService with the following technologies;
 * Java 8
 * Spring Boot 2.2.4.RELEASE
 * Spring Framework 5.2.3.RELEASE
-* Hibernate 5.4.4.Final - Not used yey
-* MySql 8.0.17 (Connector) - Not used yey
+* Hibernate 5.4.4.Final - Not used yet
+* MySql 8.0.17 (Connector) - Not used yet
 * Swagger2 2.9.2
 * Lombok 1.18.12
 * JUnit 5.5.1
