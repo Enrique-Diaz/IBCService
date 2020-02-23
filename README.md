@@ -1,7 +1,7 @@
 # IBCService
 Investment Bank Console
 
-Example project of a µProcessor with the following technologies;
+Example project of a µIBCService with the following technologies;
 * Java 8
 * Spring Boot 2.2.4.RELEASE
 * Spring Framework 5.2.3.RELEASE
