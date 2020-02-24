@@ -22,4 +22,8 @@ public class Issuer {
 	private int totalShares;
 	
 	private float sharePrice;
+	
+	private long lastBuy;
+	
+	private long lastSell;
 }

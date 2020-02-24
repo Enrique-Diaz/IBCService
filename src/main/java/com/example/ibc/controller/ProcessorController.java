@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.ibc.dto.RequestDTO;
 import com.example.ibc.dto.RequestOrderDTO;
 import com.example.ibc.dto.ResponseDTO;
-import com.example.ibc.service.ProcessorService;
+import com.example.ibc.exception.ServiceException;
+import com.example.ibc.service.ProcessorServiceImpl;
+import com.example.ibc.utils.IBCConstants;
 
 @RestController
 @RequestMapping("/process")
@@ -29,7 +31,10 @@ public class ProcessorController {
 	private Logger logger;
 	
 	@Autowired
-	private ProcessorService processOrderService;
+	private IBCConstants ibcConstants;
+	
+	@Autowired
+	private ProcessorServiceImpl processOrderService;
 	
 	/**
      * Process Orders BUY/SELL
@@ -37,24 +42,28 @@ public class ProcessorController {
      * @RequestBody orderDTO
      * 
      * @return responseObject
+	 * @throws ServiceException 
      */
 	@PostMapping("/order")
-	public ResponseEntity<?> processOrder(@RequestBody RequestOrderDTO orderDTO) {
-		logger.info("Entering Controller layer at processOrder, issuerName to process:{}", orderDTO.getIssuerName());
+	public ResponseEntity<?> processOrder(@RequestBody RequestOrderDTO requestOrderDTO) throws ServiceException {
+		logger.info("Entering Controller layer at processOrder, issuerName to process:{}", requestOrderDTO.getIssuerName());
 
+		ResponseEntity<?> response;
 		ResponseDTO responseDTO = new ResponseDTO();
 		
-		if (orderDTO != null && isMarketOpen(orderDTO.getTimeStamp())) {
-			logger.info("PROCESSING ORDER: " + orderDTO.getIssuerName());
-			responseDTO.setCurrentBalance(processOrderService.processOrderWhileOpenMarket(orderDTO));
+		if (requestOrderDTO != null && isMarketOpen(requestOrderDTO.getTimeStamp())) {
+			logger.info("PROCESSING ORDER: " + requestOrderDTO.getIssuerName());
+			responseDTO.setCurrentBalance(processOrderService.processOrderWhileOpenMarket(requestOrderDTO));
+			response = new ResponseEntity<>(responseDTO, HttpStatus.OK);
 		} else {
-			logger.info("NOT PROCESSING ORDER: " + orderDTO.getIssuerName());
-			responseDTO.setCurrentBalance(processOrderService.getMap().get(orderDTO.getIssuerName()));
-			responseDTO.getBussinessErrors().add("INVALID_OPERATION");
+			logger.info("NOT PROCESSING ORDER: " + requestOrderDTO.getIssuerName());
+			responseDTO.setCurrentBalance(processOrderService.getBalance());
+			responseDTO.getBusinessErrors().add(ibcConstants.MARKET_CLOSED);
+			response = new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
 		}
 		
 		logger.info("Leaving Controller layer at processOrder");
-		return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+		return response;
 	}
 	
 	/**
@@ -83,44 +92,31 @@ public class ProcessorController {
 	}
 	
 	/**
-     * Get Map
-     *
-     * @return responseObject
-     */
-	@GetMapping("/map")
-	public ResponseEntity<?> getMap() {
-		logger.info("Entering Controller layer at getMap");
-		
-		logger.info("Leaving Controller layer at getMap");
-		return new ResponseEntity<>(processOrderService.getMap(), HttpStatus.OK);
-	}
-	
-	/**
      * Get Balances
      *
      * @return responseObject
      */
 	@GetMapping("/balances")
 	public ResponseEntity<?> getBalances() {
-		logger.info("Entering Controller layer at getMap");
+		logger.info("Entering Controller layer at getBalances");
 		
-		logger.info("Leaving Controller layer at getMap");
+		logger.info("Leaving Controller layer at getBalances");
 		return new ResponseEntity<>(processOrderService.getBalances(), HttpStatus.OK);
 	}
 	
 	/**
 	 * Method to validate if the market is open from 6am to 3pm
 	 * */
-	private static boolean isMarketOpen(Long timeStamp) {
+	private boolean isMarketOpen(Long timeStamp) {
 		boolean isOpen = false;
 		
 		LocalDateTime localDateTimeNoTimeZone = new Timestamp(timeStamp).toLocalDateTime();
-		ZonedDateTime currentTime = localDateTimeNoTimeZone.atZone(ZoneId.of("America/Mexico_City"));
+		ZonedDateTime currentTime = localDateTimeNoTimeZone.atZone(ZoneId.of(ibcConstants.TIME_ZONE));
 		
-		ZonedDateTime marketOpen = currentTime.withHour(6).withMinute(0).withSecond(0);
-		ZonedDateTime marketClose = currentTime.withHour(15).withMinute(59).withSecond(59);
+		ZonedDateTime marketOpen = currentTime.withHour(ibcConstants.OPEN_HOUR).withMinute(ibcConstants.ZERO).withSecond(ibcConstants.ZERO);
+		ZonedDateTime marketClose = currentTime.withHour(ibcConstants.CLOSE_HOUR).withMinute(ibcConstants.CLOSE_MINUTE).withSecond(ibcConstants.CLOSE_SECOND);
 		
-		if(currentTime.compareTo(marketOpen) > 0 && currentTime.compareTo(marketClose) < 0) {
+		if(currentTime.compareTo(marketOpen) > ibcConstants.ZERO && currentTime.compareTo(marketClose) < ibcConstants.ZERO) {
 			isOpen = true;
 		}
 		

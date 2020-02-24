@@ -8,3 +8,16 @@ spring:
     url: jdbc:h2:mem:ibcdb
     username: sa
     password:
+constants:
+  invalid_operationl: INVALID_OPERATION
+  market_closed: MARKET_CLOSED
+  duplicated_operation: DUPLICATED_OPERATION
+  insufficient_balance: INSUFFICIENT_BALANCE
+  insufficient_stocks: INSUFFICIENT_STOCKS
+  timezone: America/Mexico_City
+  zero: 0
+  open_hour: 6
+  close_hour: 23
+  close_minute: 59
+  close_second: 59
+  
