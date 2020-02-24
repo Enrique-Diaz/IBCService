@@ -44,7 +44,7 @@ public class ProcessorController {
 
 		ResponseDTO responseDTO = new ResponseDTO();
 		
-		if (isMarketOpen(orderDTO.getTimeStamp())) {
+		if (orderDTO != null && isMarketOpen(orderDTO.getTimeStamp())) {
 			logger.info("PROCESSING ORDER: " + orderDTO.getIssuerName());
 			responseDTO.setCurrentBalance(processOrderService.processOrderWhileOpenMarket(orderDTO));
 		} else {
@@ -66,12 +66,20 @@ public class ProcessorController {
      */
 	@PutMapping("/balance")
 	public ResponseEntity<?> processInitialBalance(@RequestBody RequestDTO requestDTO) {
-		logger.info("Entering Controller layer at processInitialBalance, issuerName to process:{}", requestDTO.getInitialBalance().getIssuers().get(0).getIssuerName());
+		logger.info("Entering Controller layer at processInitialBalance");
 
-		processOrderService.processInitialBalance(requestDTO);
+		ResponseEntity<?> response;
+		
+		// Validate if the request is not null
+		if (requestDTO == null) {
+			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} else {
+			processOrderService.processInitialBalances(requestDTO);
+			response = new ResponseEntity<>(HttpStatus.CREATED);
+		}
 		
 		logger.info("Leaving Controller layer at processInitialBalance");
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return response;
 	}
 	
 	/**
@@ -87,6 +95,22 @@ public class ProcessorController {
 		return new ResponseEntity<>(processOrderService.getMap(), HttpStatus.OK);
 	}
 	
+	/**
+     * Get Balances
+     *
+     * @return responseObject
+     */
+	@GetMapping("/balances")
+	public ResponseEntity<?> getBalances() {
+		logger.info("Entering Controller layer at getMap");
+		
+		logger.info("Leaving Controller layer at getMap");
+		return new ResponseEntity<>(processOrderService.getBalances(), HttpStatus.OK);
+	}
+	
+	/**
+	 * Method to validate if the market is open from 6am to 3pm
+	 * */
 	private static boolean isMarketOpen(Long timeStamp) {
 		boolean isOpen = false;
 		

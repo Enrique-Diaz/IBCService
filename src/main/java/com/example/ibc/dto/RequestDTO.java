@@ -11,5 +11,5 @@ public class RequestDTO implements Serializable{
 
 	private static final long serialVersionUID = 1L;
 
-	private BalanceDTO initialBalance;
+	private BalanceDTO initialBalances;
 }
