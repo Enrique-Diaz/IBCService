@@ -96,19 +96,6 @@ public class ProcessorController {
 	}
 	
 	/**
-     * Get Balances
-     *
-     * @return responseObject
-     */
-	@GetMapping("/balances")
-	public ResponseEntity<?> getBalances() {
-		logger.info("Entering Controller layer at getMap");
-		
-		logger.info("Leaving Controller layer at getMap");
-		return new ResponseEntity<>(processOrderService.getBalances(), HttpStatus.OK);
-	}
-	
-	/**
 	 * Method to validate if the market is open from 6am to 3pm
 	 * */
 	private static boolean isMarketOpen(Long timeStamp) {
