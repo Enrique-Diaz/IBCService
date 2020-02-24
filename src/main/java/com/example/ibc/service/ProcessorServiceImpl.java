@@ -41,44 +41,49 @@ public class ProcessorServiceImpl implements ProcessorService{
 	// Used for DB
 	private final int DUMMY_ID = 1;
 	
+	// Used to check if 5 minutes has elapsed since last operation
 	private final int FIVE_MINUTES = 5 * 60 * 1000;
 	
 	// ModelMapper used to convert from DTO and Entity as needed
 	private ModelMapper modelMapper = new ModelMapper();
 	
+	/**
+	 * Method that process orders (buy/sell)
+	 * 
+	 * @param requestOrderDTO
+	 * 
+	 * @return responseBalanceDTO
+	 * */
 	@SuppressWarnings("serial")
 	@Override
 	public BalanceDTO processOrderWhileOpenMarket(RequestOrderDTO requestOrderDTO) throws ServiceException {
 		logger.info("At processOrderWhileOpenMarket, PROCESSING ORDER: " + requestOrderDTO.getIssuerName() + " ACTION: " + requestOrderDTO.getOperation());
 		
+		// Get Balance from DB using Dummy
 		Optional<Balance> optionalBalance = balanceRepository.findById(DUMMY_ID);
 		
 		BalanceDTO responseBalanceDTO = new BalanceDTO();
 		
+		// Validate if the balance is present from the DB
 		if (optionalBalance.isPresent()) {
 			Balance responseBalance = new Balance();
 			Balance balance = optionalBalance.get();
 			
+			// Validate if the Issuer is empty; throw INVALID_OPERATION if so.
 			if (balance.getIssuer().isEmpty()) {
 				logger.info(ibcConstants.INVALID_OPERATION);
 				throw new ServiceException(ibcConstants.INVALID_OPERATION, getBalance(), HttpStatus.BAD_REQUEST);
 			} else {
 				Issuer issuer = balance.getIssuer().get(ibcConstants.ZERO);
 
-				if (requestOrderDTO.getOperation() == Operation.BUY) {
-					if (!isDuplicated(requestOrderDTO.getTimeStamp(), requestOrderDTO.getOperation())) {
-						responseBalance = buyOrder(requestOrderDTO, issuer, balance);
-					} else {
-						logger.info(ibcConstants.DUPLICATED_OPERATION);
-						throw new ServiceException(ibcConstants.DUPLICATED_OPERATION, getBalance(), HttpStatus.BAD_REQUEST);
-					}
+				// Validate operation SELL or BUY
+				if (requestOrderDTO.getOperation() == Operation.BUY && !isDuplicated(requestOrderDTO.getTimeStamp(), Operation.BUY)) {
+					responseBalance = buyOrder(requestOrderDTO, issuer, balance);
+				} else if (requestOrderDTO.getOperation() == Operation.SELL && !isDuplicated(requestOrderDTO.getTimeStamp(), Operation.SELL)) {
+					responseBalance = sellOrder(requestOrderDTO, issuer, balance);
 				} else {
-					if (!isDuplicated(requestOrderDTO.getTimeStamp(), requestOrderDTO.getOperation())) {
-						responseBalance = sellOrder(requestOrderDTO, issuer, balance);
-					} else {
-						logger.info(ibcConstants.DUPLICATED_OPERATION);
-						throw new ServiceException(ibcConstants.DUPLICATED_OPERATION, getBalance(), HttpStatus.BAD_REQUEST);
-					}
+					logger.info(ibcConstants.DUPLICATED_OPERATION);
+					throw new ServiceException(ibcConstants.DUPLICATED_OPERATION, getBalance(), HttpStatus.BAD_REQUEST);
 				}
 				
 				Type listType = new TypeToken<List<IssuerDTO>>() {}.getType();
