@@ -1,8 +1,5 @@
 package com.example.ibc;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
-import com.example.ibc.dto.BalanceDTO;
 import com.example.ibc.utils.SwaggerUtils;
 
 import springfox.documentation.spring.web.plugins.Docket;
@@ -30,10 +26,5 @@ public class IBCServiceApplication {
 	public Docket api(ServletContext servletContext, Environment env) {
 		return SwaggerUtils.getInstance().getSwaggerDocket("IBC Service",
 				"This service handles Investment Bank Console requests");
-	}
-	
-	@Bean
-	public Map<String, BalanceDTO> cacheMap(){
-		return new HashMap<>();
 	}
 }

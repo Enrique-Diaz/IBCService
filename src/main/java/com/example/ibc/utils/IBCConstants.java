@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @PropertySource("classpath:application-default.yml")
-public final class IBCConstants {
+public class IBCConstants {
 
 	@Value("${constants.invalid_operationl}")
 	public String INVALID_OPERATION;

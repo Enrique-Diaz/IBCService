@@ -85,7 +85,6 @@ public class ProcessorServiceImpl implements ProcessorService{
 					logger.info(ibcConstants.DUPLICATED_OPERATION);
 					throw new ServiceException(ibcConstants.DUPLICATED_OPERATION, getBalance(), HttpStatus.BAD_REQUEST);
 				}
-				
 				Type listType = new TypeToken<List<IssuerDTO>>() {}.getType();
 				List<IssuerDTO> issuersDTO = modelMapper.map(responseBalance.getIssuer(), listType, "issuerdto-list");
 				
@@ -103,12 +102,13 @@ public class ProcessorServiceImpl implements ProcessorService{
 
 	@Override
 	@SuppressWarnings("serial")
-	public void processInitialBalances(RequestDTO requestDTO) {
+	public void processInitialBalances(RequestDTO requestDTO) throws ServiceException {
 		logger.info("At processInitialBalances");
 		
 		// Validate if the initial balance is not null
 		if (requestDTO.getInitialBalances() == null) {
-			// TODO
+			logger.info(ibcConstants.INVALID_OPERATION);
+			throw new ServiceException(ibcConstants.INVALID_OPERATION, getBalance(), HttpStatus.BAD_REQUEST);
 		} else {
 			// Convert from DTO to Entity
 			Balance balance = modelMapper.map(requestDTO.getInitialBalances(), Balance.class);
@@ -116,13 +116,13 @@ public class ProcessorServiceImpl implements ProcessorService{
 			// To work only with the first id at this moment.
 			balance.setId(DUMMY_ID);
 			Type listType = new TypeToken<List<Issuer>>() {}.getType();
-			List<Issuer> issuer = modelMapper.map(requestDTO.getInitialBalances().getIssuers(), listType, "issuer-list");
+			List<Issuer> issuers = modelMapper.map(requestDTO.getInitialBalances().getIssuers(), listType, "issuer-list");
 			
-			if (!issuer.isEmpty()) {
-				issuer.get(ibcConstants.ZERO).setId(DUMMY_ID);
+			if (!issuers.isEmpty()) {
+				issuers.get(ibcConstants.ZERO).setId(DUMMY_ID);
 			}
 			
-			balance.setIssuer(issuer);
+			balance.setIssuer(issuers);
 						
 			// Save balance entity and childs (issuers)
 			balance = balanceRepository.save(balance);
@@ -153,7 +153,7 @@ public class ProcessorServiceImpl implements ProcessorService{
 		return responseBalanceDTO;
 	}
 	
-	private Balance buyOrder(RequestOrderDTO requestOrderDTO, Issuer issuer, Balance balance) throws ServiceException {
+	public Balance buyOrder(RequestOrderDTO requestOrderDTO, Issuer issuer, Balance balance) throws ServiceException {
 		Balance responseBalance = new Balance();
 		float amount = requestOrderDTO.getTotalShares() * requestOrderDTO.getSharePrice();
 		
@@ -172,7 +172,7 @@ public class ProcessorServiceImpl implements ProcessorService{
 		return responseBalance;
 	}
 	
-	private Balance sellOrder(RequestOrderDTO requestOrderDTO, Issuer issuer, Balance balance) throws ServiceException {
+	public Balance sellOrder(RequestOrderDTO requestOrderDTO, Issuer issuer, Balance balance) throws ServiceException {
 		Balance responseBalance = new Balance();
 		float amount = requestOrderDTO.getTotalShares() * requestOrderDTO.getSharePrice();
 		
@@ -194,7 +194,7 @@ public class ProcessorServiceImpl implements ProcessorService{
 	/**
 	 * Method to validate if the operation is duplicated
 	 * */
-	private boolean isDuplicated(Long timeStamp, Operation operation) {
+	public boolean isDuplicated(Long timeStamp, Operation operation) {
 		boolean isDuplicated = true;
 		
 		Issuer issuer = issuerRepository.findById(DUMMY_ID).get();

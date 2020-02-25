@@ -34,7 +34,7 @@ public class ProcessorController {
 	private IBCConstants ibcConstants;
 	
 	@Autowired
-	private ProcessorServiceImpl processOrderService;
+	private ProcessorServiceImpl processorServiceImpl;
 	
 	/**
      * Process Orders BUY/SELL
@@ -46,22 +46,24 @@ public class ProcessorController {
      */
 	@PostMapping("/order")
 	public ResponseEntity<?> processOrder(@RequestBody RequestOrderDTO requestOrderDTO) throws ServiceException {
-		logger.info("Entering Controller layer at processOrder, issuerName to process:{}", requestOrderDTO.getIssuerName());
+		logger.info("Entering Controller layer at processOrder");
 
 		ResponseEntity<?> response;
 		ResponseDTO responseDTO = new ResponseDTO();
 		
-		if (requestOrderDTO != null && isMarketOpen(requestOrderDTO.getTimeStamp())) {
+		if (requestOrderDTO == null) {
+			logger.info("NOT PROCESSING ORDER");
+			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		} else if (isMarketOpen(requestOrderDTO.getTimeStamp())) {
 			logger.info("PROCESSING ORDER: " + requestOrderDTO.getIssuerName());
-			responseDTO.setCurrentBalance(processOrderService.processOrderWhileOpenMarket(requestOrderDTO));
+			responseDTO.setCurrentBalance(processorServiceImpl.processOrderWhileOpenMarket(requestOrderDTO));
 			response = new ResponseEntity<>(responseDTO, HttpStatus.OK);
 		} else {
-			logger.info("NOT PROCESSING ORDER: " + requestOrderDTO.getIssuerName());
-			responseDTO.setCurrentBalance(processOrderService.getBalance());
+			logger.info("NOT PROCESSING ORDER");
+			responseDTO.setCurrentBalance(processorServiceImpl.getBalance());
 			responseDTO.getBusinessErrors().add(ibcConstants.MARKET_CLOSED);
 			response = new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
 		}
-		
 		logger.info("Leaving Controller layer at processOrder");
 		return response;
 	}
@@ -72,9 +74,10 @@ public class ProcessorController {
      * @RequestBody orderDTO
      * 
      * @return responseObject
+	 * @throws ServiceException 
      */
 	@PutMapping("/balance")
-	public ResponseEntity<?> processInitialBalance(@RequestBody RequestDTO requestDTO) {
+	public ResponseEntity<?> processInitialBalance(@RequestBody RequestDTO requestDTO) throws ServiceException {
 		logger.info("Entering Controller layer at processInitialBalance");
 
 		ResponseEntity<?> response;
@@ -83,7 +86,7 @@ public class ProcessorController {
 		if (requestDTO == null) {
 			response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		} else {
-			processOrderService.processInitialBalances(requestDTO);
+			processorServiceImpl.processInitialBalances(requestDTO);
 			response = new ResponseEntity<>(HttpStatus.CREATED);
 		}
 		
@@ -101,13 +104,13 @@ public class ProcessorController {
 		logger.info("Entering Controller layer at getBalances");
 		
 		logger.info("Leaving Controller layer at getBalances");
-		return new ResponseEntity<>(processOrderService.getBalances(), HttpStatus.OK);
+		return new ResponseEntity<>(processorServiceImpl.getBalances(), HttpStatus.OK);
 	}
 	
 	/**
 	 * Method to validate if the market is open from 6am to 3pm
 	 * */
-	private boolean isMarketOpen(Long timeStamp) {
+	public boolean isMarketOpen(Long timeStamp) {
 		boolean isOpen = false;
 		
 		LocalDateTime localDateTimeNoTimeZone = new Timestamp(timeStamp).toLocalDateTime();

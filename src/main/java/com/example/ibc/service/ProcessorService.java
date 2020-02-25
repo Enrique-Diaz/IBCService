@@ -12,7 +12,7 @@ public interface ProcessorService {
 
 	public BalanceDTO processOrderWhileOpenMarket(RequestOrderDTO requestOrderDTO) throws ServiceException;
 	
-	public void processInitialBalances(RequestDTO requestDTO);
+	public void processInitialBalances(RequestDTO requestDTO) throws ServiceException;
 	
 	public List<Balance> getBalances();
 	
