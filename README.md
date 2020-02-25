@@ -20,7 +20,8 @@ Service will serve the following petitions;
 # Things to consider
 1. Modify the path for the logger in the src/main/resources/logback.xml
 2. Modify application-default.yml when connecting to DB also if want to change the port for the service.
-3. To run this application you need to have git and maven installed in the desired machine to work.
-4. Once the project is cloned use mvn clean install spring-boot:run (this will clean the project, install all the libraries needed, run tests and finally run the application).
-5. You can test the endpoints by curl, postman/soapui or with swagger (http://localhost:63000/swagger-ui.html).
-6. It's possible to see the DB at http://localhost:63000/h2-console (user:sa | no password set)
+3. Modify application-default.yml constants related to open and close hours as desired.
+4. To run this application you need to have git and maven installed in the desired machine to work.
+5. Once the project is cloned use mvn clean install spring-boot:run (this will clean the project, install all the libraries needed, run tests and finally run the application).
+6. You can test the endpoints by curl, postman/soapui or with swagger (http://localhost:63000/swagger-ui.html).
+7. It's possible to see the DB at http://localhost:63000/h2-console (user:sa | no password set)

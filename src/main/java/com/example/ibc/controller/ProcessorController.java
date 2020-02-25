@@ -37,7 +37,8 @@ public class ProcessorController {
 	private ProcessorServiceImpl processorServiceImpl;
 	
 	/**
-     * Process Orders BUY/SELL
+     * Process Orders BUY/SELL, checks if the request is null,
+     * also checks if the Market is open or not.
      *
      * @RequestBody orderDTO
      * 
@@ -69,7 +70,9 @@ public class ProcessorController {
 	}
 	
 	/**
-     * Process Initial Balance
+     * Process Initial Balance, check if the request is null
+     * returns BAD_REQUEST if so and if the request is OK
+     * returns CREATED.
      *
      * @RequestBody orderDTO
      * 
@@ -95,7 +98,7 @@ public class ProcessorController {
 	}
 	
 	/**
-     * Get Balances
+     * Get Balances FOR TESTING PURPOSE ONLY
      *
      * @return responseObject
      */
@@ -109,6 +112,13 @@ public class ProcessorController {
 	
 	/**
 	 * Method to validate if the market is open from 6am to 3pm
+	 * uses ZonedDateTime to compare the time with the desired
+	 * TimeZone.
+	 * 
+	 * @param Long timeStamp
+	 * 
+	 * @return boolean isOpen
+	 * 
 	 * */
 	public boolean isMarketOpen(Long timeStamp) {
 		boolean isOpen = false;

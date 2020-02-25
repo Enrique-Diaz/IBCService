@@ -86,9 +86,11 @@ public class ProcessorServiceImpl implements ProcessorService{
 					throw new ServiceException(ibcConstants.DUPLICATED_OPERATION, getBalance(), HttpStatus.BAD_REQUEST);
 				}
 				Type listType = new TypeToken<List<IssuerDTO>>() {}.getType();
-				List<IssuerDTO> issuersDTO = modelMapper.map(responseBalance.getIssuer(), listType, "issuerdto-list");
 				
+				// Convert from Entity to DTO
+				List<IssuerDTO> issuersDTO = modelMapper.map(responseBalance.getIssuer(), listType, "issuerdto-list");
 				responseBalanceDTO = modelMapper.map(balance, BalanceDTO.class);
+				
 				responseBalanceDTO.setIssuers(issuersDTO);
 			}
 		} else {
@@ -131,12 +133,18 @@ public class ProcessorServiceImpl implements ProcessorService{
 		logger.info("Leaving processInitialBalances");
 	}
 
+	/**
+	 * FOR TESTING PURPOSE ONLY
+	 * */
 	@Override
 	public List<Balance> getBalances() {
 		
 		return (List<Balance>) balanceRepository.findAll();
 	}
 	
+	/**
+	 * To ensure responses always get back a balance.
+	 * */
 	@Override
 	@SuppressWarnings("serial")
 	public BalanceDTO getBalance() {
@@ -153,6 +161,9 @@ public class ProcessorServiceImpl implements ProcessorService{
 		return responseBalanceDTO;
 	}
 	
+	/**
+	 * To do the maths on the order buy and validation
+	 * */
 	public Balance buyOrder(RequestOrderDTO requestOrderDTO, Issuer issuer, Balance balance) throws ServiceException {
 		Balance responseBalance = new Balance();
 		float amount = requestOrderDTO.getTotalShares() * requestOrderDTO.getSharePrice();
@@ -172,6 +183,9 @@ public class ProcessorServiceImpl implements ProcessorService{
 		return responseBalance;
 	}
 	
+	/**
+	 * To do the maths on the order sell and validation
+	 * */
 	public Balance sellOrder(RequestOrderDTO requestOrderDTO, Issuer issuer, Balance balance) throws ServiceException {
 		Balance responseBalance = new Balance();
 		float amount = requestOrderDTO.getTotalShares() * requestOrderDTO.getSharePrice();
